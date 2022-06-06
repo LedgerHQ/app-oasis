@@ -65,7 +65,7 @@ jobs:
       image: zondax/builder-bolos:latest
       options: --user ${{ needs.configure.outputs.uid_gid }}
     env:
-      BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
+      BOLOS_SDK: ${{ github.workspace }}/app/deps/nanos-secure-sdk
       BOLOS_ENV: /opt/bolos
       HOME: /home/zondax_circle
     steps:
@@ -85,7 +85,7 @@ jobs:
       image: zondax/builder-bolos:latest
       options: --user ${{ needs.configure.outputs.uid_gid }}
     env:
-      BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
+      BOLOS_SDK: ${{ github.workspace }}/app/deps/nanos-secure-sdk
       BOLOS_ENV: /opt/bolos
       HOME: /home/zondax_circle
     steps:
@@ -287,7 +287,7 @@ jobs:
       image: zondax/builder-bolos:latest
       options: --user ${{ needs.configure.outputs.uid_gid }}
     env:
-      BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
+      BOLOS_SDK: ${{ github.workspace }}/app/deps/nanos-secure-sdk
       BOLOS_ENV: /opt/bolos
       HOME: /home/zondax_circle
     steps:
@@ -328,7 +328,7 @@ jobs:
       image: zondax/builder-bolos:latest
       options: --user ${{ needs.configure.outputs.uid_gid }}
     env:
-      BOLOS_SDK: ${{ github.workspace }}/deps/nanosplus-secure-sdk
+      BOLOS_SDK: ${{ github.workspace }}/app/deps/nanosplus-secure-sdk
       BOLOS_ENV: /opt/bolos
       HOME: /home/zondax_circle
     steps:
@@ -369,7 +369,7 @@ jobs:
       image: zondax/builder-bolos:latest
       options: --user ${{ needs.configure.outputs.uid_gid }}
     env:
-      BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
+      BOLOS_SDK: ${{ github.workspace }}/app/deps/nanos-secure-sdk
       BOLOS_ENV: /opt/bolos
       HOME: /home/zondax_circle
     steps:

@@ -34,7 +34,7 @@ jobs:
       - name: Invoke `version`
         shell: bash -l {0}
         env:
-          BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
+          BOLOS_SDK: ${{ github.workspace }}/app/deps/nanos-secure-sdk
         run: make version
 
       - id: store-version

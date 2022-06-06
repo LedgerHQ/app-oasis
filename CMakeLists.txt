@@ -81,20 +81,20 @@ string(APPEND CMAKE_LINKER_FLAGS " -fsanitize=address -fno-omit-frame-pointer")
 ##############################################################
 #  static libs
 file(GLOB_RECURSE TINYCBOR_SRC
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/src/cborparser.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/src/cborvalidation.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/tinycbor/src/cborparser.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/tinycbor/src/cborvalidation.c
         )
 
 file(GLOB_RECURSE LIB_SRC
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/ledger-zxlib/src/*.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/sha512/sha512.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/ledger-zxlib/src/*.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/sha512/sha512.c
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/parser.c
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/consumer/parser_consumer.c
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/consumer/parser_impl_con.c
         )
 
 file(GLOB_RECURSE LIB_VAL_SRC
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/ledger-zxlib/src/*.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/ledger-zxlib/src/*.c
         #########
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/parser.c
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/validator/parser_validator.c
@@ -116,17 +116,17 @@ target_compile_definitions(app_lib PRIVATE NO_DISPLAY)
 target_compile_definitions(app_val_lib PRIVATE APP_VALIDATOR)
 
 target_include_directories(app_lib PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/ledger-zxlib/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/sha512
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/ledger-zxlib/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/tinycbor/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/sha512
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/consumer
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/common
         )
 
 target_include_directories(app_val_lib PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/ledger-zxlib/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/sha512
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/ledger-zxlib/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/sha512
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/validator
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/common
@@ -154,9 +154,9 @@ target_include_directories(unittests PUBLIC
         ${gmock_SOURCE_DIR}/include
         ${CONAN_INCLUDE_DIRS_FMT}
         ${CONAN_INCLUDE_DIRS_JSONCPP}
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/tinycbor/src
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/utils
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/ledger-zxlib/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/ledger-zxlib/include
         )
 
 target_include_directories(unittests_val PUBLIC
@@ -164,7 +164,7 @@ target_include_directories(unittests_val PUBLIC
         ${gmock_SOURCE_DIR}/include
         ${CONAN_INCLUDE_DIRS_FMT}
         ${CONAN_INCLUDE_DIRS_JSONCPP}
-        ${CMAKE_CURRENT_SOURCE_DIR}/deps/ledger-zxlib/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/deps/ledger-zxlib/include
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/common
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src/validator
         ${CMAKE_CURRENT_SOURCE_DIR}/app/src
@@ -201,7 +201,7 @@ if(ENABLE_FUZZING)
 
     foreach(target ${FUZZ_TARGETS})
         add_executable(fuzz-${target} ${CMAKE_CURRENT_SOURCE_DIR}/fuzz/${target}.cpp)
-        target_include_directories(fuzz-${target} PUBLIC deps/PicoSHA2)
+        target_include_directories(fuzz-${target} PUBLIC app/deps/PicoSHA2)
         target_link_libraries(fuzz-${target} PRIVATE app_lib)
         target_link_options(fuzz-${target} PRIVATE "-fsanitize=fuzzer")
         target_compile_definitions(fuzz-${target} PRIVATE APP_CONSUMER)
