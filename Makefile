@@ -22,6 +22,7 @@ TESTS_JS_PACKAGE = "@zondax/ledger-oasis"
 TESTS_JS_DIR = $(CURDIR)/js
 
 ifeq ($(BOLOS_SDK),)
+ZXLIB_COMPILE_STAX ?= 1
 include $(CURDIR)/deps/ledger-zxlib/dockerized_build.mk
 else
 default:
@@ -34,3 +35,8 @@ endif
 build_val: COIN=oasis_validator
 build_val: buildS
 	cp $(CURDIR)/app/bin/app.elf $(CURDIR)/app/bin/app_val.elf
+
+test_all:
+	make zemu_install
+	make
+	make zemu_test

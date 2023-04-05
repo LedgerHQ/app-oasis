@@ -32,8 +32,32 @@
 
 #include "parser_txdef.h"
 #include "parser_impl.h"
+#include "view.h"
 
 static bool tx_initialized = false;
+
+__Z_INLINE void handle_getversion(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx) {
+    UNUSED(flags);
+    UNUSED(rx);
+#ifdef DEBUG
+    G_io_apdu_buffer[0] = 0xFF;
+#else
+    G_io_apdu_buffer[0] = 0;
+#endif
+    G_io_apdu_buffer[1] = LEDGER_MAJOR_VERSION;
+    G_io_apdu_buffer[2] = LEDGER_MINOR_VERSION;
+    G_io_apdu_buffer[3] = LEDGER_PATCH_VERSION;
+    G_io_apdu_buffer[4] = !IS_UX_ALLOWED;
+
+    G_io_apdu_buffer[5] = (TARGET_ID >> 24) & 0xFF;
+    G_io_apdu_buffer[6] = (TARGET_ID >> 16) & 0xFF;
+    G_io_apdu_buffer[7] = (TARGET_ID >> 8) & 0xFF;
+    G_io_apdu_buffer[8] = (TARGET_ID >> 0) & 0xFF;
+
+    *tx += 9;
+    THROW(APDU_CODE_OK);
+}
+
 
 void extractHDPath(uint32_t rx, uint32_t offset) {
     if ((rx - offset) == sizeof(uint32_t) * HDPATH_LEN_ADR0008) {
@@ -120,7 +144,7 @@ __Z_INLINE void handleGetAddr(volatile uint32_t *flags, volatile uint32_t *tx, u
     }
     if (requireConfirmation) {
         view_review_init(addr_getItem, addr_getNumItems, app_reply_address);
-        view_review_show();
+        view_review_show(REVIEW_ADDRESS);
         *flags |= IO_ASYNCH_REPLY;
         return;
     }
@@ -148,7 +172,7 @@ __Z_INLINE void handleSign(volatile uint32_t *flags, volatile uint32_t *tx, uint
 #if defined(APP_CONSUMER)
     CHECK_APP_CANARY()
     view_review_init(tx_getItem, tx_getNumItems, app_sign);
-    view_review_show();
+    view_review_show(REVIEW_TXN);
     *flags |= IO_ASYNCH_REPLY;
 #elif defined(APP_VALIDATOR)
     switch(parser_tx_obj.type) {
@@ -160,7 +184,7 @@ __Z_INLINE void handleSign(volatile uint32_t *flags, volatile uint32_t *tx, uint
                             } else {
                                 CHECK_APP_CANARY()
                                 view_review_init(tx_getItem, tx_getNumItems, app_sign);
-                                view_review_show();
+                                view_review_show(REVIEW_TXN);
                                 *flags |= IO_ASYNCH_REPLY;
                             }
                         }

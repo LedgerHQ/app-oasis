@@ -24,3 +24,6 @@
 #else
 #error "APP MODE IS NOT SUPPORTED"
 #endif
+
+#define INS_GET_ADDR_ED25519            1
+#define INS_SIGN_ED25519                2

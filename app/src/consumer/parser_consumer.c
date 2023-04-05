@@ -28,7 +28,7 @@
 #include "parser_txdef_con.h"
 #include "coin.h"
 
-#if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
+#if defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)
 // For some reason NanoX requires this function
 void __assert_fail(__Z_UNUSED const char * assertion, __Z_UNUSED const char * file, __Z_UNUSED unsigned int line, __Z_UNUSED const char * function){
     while(1) {};
@@ -272,7 +272,7 @@ __Z_INLINE parser_error_t parser_printAddress(const address_raw_t *addressRaw,
     const zxerr_t err = bech32EncodeFromBytes(
             outBuffer, sizeof(outBuffer),
             COIN_HRP,
-            (uint8_t *) addressRaw, sizeof(address_raw_t), 1);
+            (uint8_t *) addressRaw, sizeof(address_raw_t), 1, BECH32_ENCODING_BECH32);
 
     if (err != zxerr_ok) {
         return parser_invalid_address;
