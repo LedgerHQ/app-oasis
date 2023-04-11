@@ -14,13 +14,10 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, {DEFAULT_START_OPTIONS, DeviceModel} from "@zondax/zemu";
+import Zemu, { DEFAULT_START_OPTIONS } from "@zondax/zemu";
 // @ts-ignore
-import {OasisApp} from "@zondax/ledger-oasis";
+import { OasisApp } from "@zondax/ledger-oasis";
 import { models } from "./common";
-
-const ed25519 = require("ed25519-supercop");
-const sha512 = require("js-sha512");
 
 const APP_SEED = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 

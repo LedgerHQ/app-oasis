@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2020 Zondax GmbH
+ *  (c) 2018 - 2023 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, { ButtonKind, zondaxMainmenuNavigation } from "@zondax/zemu";
+import Zemu, { zondaxMainmenuNavigation, ButtonKind } from '@zondax/zemu'
 // @ts-ignore
-import { OasisApp } from "@zondax/ledger-oasis";
-import { STANDARD_BLOBS, models, defaultOptions } from './common'
+import {OasisApp} from "@zondax/ledger-oasis";
+import { models, defaultOptions, STANDARD_BLOBS } from "./common";
 
 const ed25519 = require("ed25519-supercop");
 const sha512 = require("js-sha512");
@@ -25,9 +25,10 @@ const sha512 = require("js-sha512");
 jest.setTimeout(60000)
 
 // Derivation path. First 3 items are automatically hardened!
-const path ="m/44'/474'/0'";
+const path = "m/44'/474'/5'/0'/3'";
 
-describe('Standard-Adr0008-0', function () {
+
+describe('Standard', function () {
   test.concurrent.each(models)('can start and stop container', async function (m) {
     const sim = new Zemu(m.path);
     try {
@@ -40,9 +41,9 @@ describe('Standard-Adr0008-0', function () {
   test.concurrent.each(models)('main menu', async function (m) {
     const sim = new Zemu(m.path);
     try {
-      await sim.start({...defaultOptions, model: m.name,});
+      await sim.start({ ...defaultOptions, model: m.name })
       const nav = zondaxMainmenuNavigation(m.name, [1, 0, 0, 4, -5])
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-adr0008-0-mainmenu`, nav.schedule)
+      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-mainmenu`, nav.schedule)
     } finally {
       await sim.close();
     }
@@ -74,7 +75,6 @@ describe('Standard-Adr0008-0', function () {
       await sim.start({...defaultOptions, model: m.name,});
       const app = new OasisApp(sim.getTransport());
 
-
       const resp = await app.getAddressAndPubKey(path);
 
       console.log(resp)
@@ -82,8 +82,8 @@ describe('Standard-Adr0008-0', function () {
       expect(resp.return_code).toEqual(0x9000);
       expect(resp.error_message).toEqual("No errors");
 
-      const expected_bech32_address = "oasis1qqjkrr643qv7yzem6g4m8rrtceh42n46usfscpcf";
-      const expected_pk = "45601f761af17dba50243529e629732f1c58d08ffddaa8491238540475729d85";
+      const expected_bech32_address = "oasis1qphdkldpttpsj2j3l9sde9h26cwpfwqwwuhvruyu";
+      const expected_pk = "aba52c0dcb80c2fe96ed4c3741af40c573a0500c0d73acda22795c37cb0f1739";
 
       expect(resp.bech32_address).toEqual(expected_bech32_address);
       expect(resp.pk.toString('hex')).toEqual(expected_pk);
@@ -107,7 +107,7 @@ describe('Standard-Adr0008-0', function () {
       const respRequest = app.showAddressAndPubKey(path);
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
-      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-adr0008-0-show_address`);
+      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-show_address`);
 
       const resp = await respRequest;
       console.log(resp);
@@ -115,8 +115,8 @@ describe('Standard-Adr0008-0', function () {
       expect(resp.return_code).toEqual(0x9000);
       expect(resp.error_message).toEqual("No errors");
 
-      const expected_bech32_address = "oasis1qqjkrr643qv7yzem6g4m8rrtceh42n46usfscpcf";
-      const expected_pk = "45601f761af17dba50243529e629732f1c58d08ffddaa8491238540475729d85";
+      const expected_bech32_address = "oasis1qphdkldpttpsj2j3l9sde9h26cwpfwqwwuhvruyu";
+      const expected_pk = "aba52c0dcb80c2fe96ed4c3741af40c573a0500c0d73acda22795c37cb0f1739";
 
       expect(resp.bech32_address).toEqual(expected_bech32_address);
       expect(resp.pk.toString('hex')).toEqual(expected_pk);
@@ -125,25 +125,46 @@ describe('Standard-Adr0008-0', function () {
     }
   });
 
-  it('hash', async function () {
-    const txBlob = Buffer.from(
-      "pGNmZWWiY2dhcwBmYW1vdW50QGRib2R5omd4ZmVyX3RvWCBkNhaFWEyIEubmS3EVtRLTanD3U+vDV5fke4Obyq83CWt4ZmVyX3Rva2Vuc0Blbm9uY2UAZm1ldGhvZHBzdGFraW5nLlRyYW5zZmVy",
-      "base64",
-    );
-    const context = "oasis-core/consensus: tx for chain testing";
-    const hasher = sha512.sha512_256.update(context)
-    hasher.update(txBlob);
-    const hash = Buffer.from(hasher.hex(), "hex")
-    console.log(hash.toString("hex"))
-    expect(hash.toString("hex")).toEqual("86f53ebf15a09c4cd1cf7a52b8b381d74a2142996aca20690d2e750c1d262ec0")
-  });
+  describe.each(STANDARD_BLOBS)('Standard', function (data) {
+    test.concurrent.each(models)(`Test: ${data.name}`, async function (m) {
+      const sim = new Zemu(m.path)
+      try {
+        await sim.start({...defaultOptions, model: m.name,});
+        const app = new OasisApp(sim.getTransport());
+
+        const pkResponse = await app.getAddressAndPubKey(path);
+        expect(pkResponse.return_code).toEqual(0x9000);
+        expect(pkResponse.error_message).toEqual("No errors");
+
+        const signatureRequest = app.sign(path, data.context, data.txBlob);
+        await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
+        await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-${data.name}`);
+
+        let resp = await signatureRequest;
+        console.log(resp);
+
+        expect(resp.return_code).toEqual(0x9000);
+        expect(resp.error_message).toEqual("No errors");
+
+        const hasher = sha512.sha512_256.update(data.context)
+        hasher.update(data.txBlob);
+        const msgHash = Buffer.from(hasher.hex(), "hex")
+
+        // Now verify the signature
+        const valid = ed25519.verify(resp.signature, msgHash, pkResponse.pk);
+        expect(valid).toEqual(true);
+      } finally {
+        sim.dumpEvents()
+        await sim.close()
+      }
+    })
+  })
 
   test.concurrent.each(models)('sign basic - invalid', async function (m) {
     const sim = new Zemu(m.path);
     try {
       await sim.start({...defaultOptions, model: m.name,});
       const app = new OasisApp(sim.getTransport());
-
 
       const context = "oasis-core/consensus: tx for chain testing";
       let invalidMessage = Buffer.from(
@@ -175,7 +196,6 @@ describe('Standard-Adr0008-0', function () {
 
       const app = new OasisApp(sim.getTransport());
 
-
       const context = "oasis-metadata-registry: entity";
 
       const txBlob = Buffer.from(
@@ -200,52 +220,15 @@ describe('Standard-Adr0008-0', function () {
       await sim.close();
     }
   });
-
-  describe.each(STANDARD_BLOBS)('Addr0008.0', function (data) {
-    test.concurrent.each(models)(`Test: ${data.name}`, async function (m) {
-      const sim = new Zemu(m.path)
-      try {
-        await sim.start({...defaultOptions, model: m.name,});
-        const app = new OasisApp(sim.getTransport());
-
-        const pkResponse = await app.getAddressAndPubKey(path);
-        expect(pkResponse.return_code).toEqual(0x9000);
-        expect(pkResponse.error_message).toEqual("No errors");
-
-        const signatureRequest = app.sign(path, data.context, data.txBlob);
-        await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
-        await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-adr0008-0-${data.name}`);
-
-        let resp = await signatureRequest;
-        console.log(resp);
-
-        expect(resp.return_code).toEqual(0x9000);
-        expect(resp.error_message).toEqual("No errors");
-
-        const hasher = sha512.sha512_256.update(data.context)
-        hasher.update(data.txBlob);
-        const msgHash = Buffer.from(hasher.hex(), "hex")
-
-        // Now verify the signature
-        const valid = ed25519.verify(resp.signature, msgHash, pkResponse.pk);
-        expect(valid).toEqual(true);
-      } finally {
-        sim.dumpEvents()
-        await sim.close()
-      }
-    })
-  })
-
-
 });
 
 describe('Issue #68', function () {
+
   test.concurrent.each(models)('should sign a transaction two time in a row (issue #68)', async function (m) {
     const sim = new Zemu(m.path);
     try {
       await sim.start({...defaultOptions, model: m.name,});
       const app = new OasisApp(sim.getTransport());
-
 
       const context = "oasis-core/consensus: tx for chain testing";
       const txBlob = Buffer.from(
@@ -262,7 +245,7 @@ describe('Issue #68', function () {
       const signatureRequest = app.sign(path, context, txBlob);
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
-      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-adr0008-0-sign_basic`);
+      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-sign_basic`);
 
       let resp = await signatureRequest;
       console.log(resp);
@@ -271,13 +254,13 @@ describe('Issue #68', function () {
       expect(resp.error_message).toEqual("No errors");
 
       // Need to wait a bit before signing again.
+      await sim.deleteEvents();
       await Zemu.sleep(250);
 
       // Here we go again
       const signatureRequestBis = app.sign(path, context, txBlob);
-
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
-      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-adr0008-0-sign_basic`);
+      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-sign_basic`);
 
       let respBis = await signatureRequestBis;
       console.log(respBis);
@@ -289,4 +272,99 @@ describe('Issue #68', function () {
       await sim.close();
     }
   });
+
+  test.concurrent.each(models)('sign basic - mainnet', async function (m) {
+    const sim = new Zemu(m.path);
+    try {
+      await sim.start({...defaultOptions, model: m.name,});
+      const app = new OasisApp(sim.getTransport());
+
+      const context = "oasis-core/consensus: tx for chain 53852332637bacb61b91b6411ab4095168ba02a50be4c3f82448438826f23898";
+      const txBlob = Buffer.from(
+        "pGNmZWWiY2dhcwBmYW1vdW50QGRib2R5omtiZW5lZmljaWFyeVUA8PesI5mFWUkMVHwStQ6Fieb4bsFtYW1vdW50X2NoYW5nZUBlbm9uY2UBZm1ldGhvZG1zdGFraW5nLkFsbG93",
+        "base64",
+      );
+
+      const pkResponse = await app.getAddressAndPubKey(path);
+      console.log(pkResponse);
+      expect(pkResponse.return_code).toEqual(0x9000);
+      expect(pkResponse.error_message).toEqual("No errors");
+
+      // do not wait here..
+      const signatureRequest = app.sign(path, context, txBlob);
+
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
+      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-sign_basic_allow_mainnet`);
+
+      let resp = await signatureRequest;
+      console.log(resp);
+
+      expect(resp.return_code).toEqual(0x9000);
+      expect(resp.error_message).toEqual("No errors");
+
+      const hasher = sha512.sha512_256.update(context)
+      hasher.update(txBlob);
+      const msgHash = Buffer.from(hasher.hex(), "hex")
+
+      // Now verify the signature
+      const valid = ed25519.verify(resp.signature, msgHash, pkResponse.pk);
+      expect(valid).toEqual(true);
+    } finally {
+      await sim.close();
+    }
+  });
+
+  test.concurrent.each(models)('cast vote - yes mainnet', async function (m) {
+    const sim = new Zemu(m.path);
+    try {
+      await sim.start({...defaultOptions, model: m.name,});
+      const app = new OasisApp(sim.getTransport());
+
+      const context = "oasis-core/consensus: tx for chain 53852332637bacb61b91b6411ab4095168ba02a50be4c3f82448438826f23898";
+      const txBlob = Buffer.from(
+        "pGNmZWWiY2dhcwBmYW1vdW50QGRib2R5omJpZBoAmJaAZHZvdGUBZW5vbmNlAWZtZXRob2RzZ292ZXJuYW5jZS5DYXN0Vm90ZQ==",
+        "base64",
+      );
+
+      const pkResponse = await app.getAddressAndPubKey(path);
+      console.log(pkResponse);
+      expect(pkResponse.return_code).toEqual(0x9000);
+      expect(pkResponse.error_message).toEqual("No errors");
+
+      // do not wait here..
+      const signatureRequest = app.sign(path, context, txBlob);
+
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000);
+      await sim.compareSnapshotsAndApprove(".", `${m.prefix.toLowerCase()}-cast_vote_yes_mainnet`);
+
+      let resp = await signatureRequest;
+      console.log(resp);
+
+      expect(resp.return_code).toEqual(0x9000);
+      expect(resp.error_message).toEqual("No errors");
+
+      const hasher = sha512.sha512_256.update(context)
+      hasher.update(txBlob);
+      const msgHash = Buffer.from(hasher.hex(), "hex")
+
+      // Now verify the signature
+      const valid = ed25519.verify(resp.signature, msgHash, pkResponse.pk);
+      expect(valid).toEqual(true);
+    } finally {
+      await sim.close();
+    }
+  });
 })
+
+it('hash', async function () {
+  const txBlob = Buffer.from(
+    "pGNmZWWiY2dhcwBmYW1vdW50QGRib2R5omd4ZmVyX3RvWCBkNhaFWEyIEubmS3EVtRLTanD3U+vDV5fke4Obyq83CWt4ZmVyX3Rva2Vuc0Blbm9uY2UAZm1ldGhvZHBzdGFraW5nLlRyYW5zZmVy",
+    "base64",
+  );
+  const context = "oasis-core/consensus: tx for chain testing";
+  const hasher = sha512.sha512_256.update(context)
+  hasher.update(txBlob);
+  const hash = Buffer.from(hasher.hex(), "hex")
+  console.log(hash.toString("hex"))
+  expect(hash.toString("hex")).toEqual("86f53ebf15a09c4cd1cf7a52b8b381d74a2142996aca20690d2e750c1d262ec0")
+});
